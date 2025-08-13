@@ -1,5 +1,43 @@
 # Linux下wxWidgets GUI字体显示问题解决方案
 
+## 🚀 Ubuntu快速解决方案
+
+如果您的Ubuntu系统下GUI文字不显示，请按以下步骤操作：
+
+### 步骤1：运行诊断脚本
+```bash
+chmod +x fix_ubuntu_fonts.sh
+./fix_ubuntu_fonts.sh
+```
+
+### 步骤2：安装字体包
+```bash
+sudo apt-get update
+sudo apt-get install -y fonts-wqy-microhei fonts-noto-cjk fonts-dejavu fonts-liberation
+sudo fc-cache -fv
+```
+
+### 步骤3：设置环境变量
+```bash
+export LANG=zh_CN.UTF-8
+export LC_ALL=zh_CN.UTF-8
+```
+
+### 步骤4：重新编译并运行
+```bash
+./build_linux.sh
+./build/bin/wxmusicplayer
+```
+
+### 步骤5：如果仍有问题，运行字体测试
+```bash
+chmod +x build_font_test.sh
+./build_font_test.sh
+./font_test
+```
+
+---
+
 ## 问题描述
 
 在Ubuntu/Linux系统下运行wxWidgets应用程序时，GUI界面中的中文字符可能显示为空白或方块，这是因为：
