@@ -114,10 +114,19 @@ make -j$(nproc)
 
 - **Linux AppImage**: 自动构建 Linux AppImage 包
 - **备用tar.gz包**: 如果AppImage构建失败，自动创建tar.gz包
+- **兼容性构建**: 使用Ubuntu 20.04确保更好的向后兼容性
 - **快速构建**: 使用Ubuntu系统包，构建时间短，节省GitHub Actions额度
 - **自动发布**: 推送标签时自动创建 GitHub Release
 
 查看构建状态：[![Build AppImage](https://github.com/wangchaozhi/WXMUSICPLAYER/workflows/Build%20AppImage/badge.svg)](https://github.com/wangchaozhi/WXMUSICPLAYER/actions)
+
+### 兼容性说明
+
+如果遇到库版本问题（如 `GLIBC_2.38 not found`），请：
+
+1. **使用本地构建**：运行 `./build_compatible.sh` 在本地编译
+2. **安装运行时库**：确保系统安装了wxWidgets运行时库
+3. **检查系统版本**：建议使用Ubuntu 18.04或更新版本
 
 ## 运行程序
 

@@ -29,6 +29,18 @@ fi
 echo "📋 检查依赖库..."
 ldd usr/bin/wxmusicplayer
 
+# 检查是否有系统库冲突
+echo "🔍 检查库文件..."
+if ls usr/lib/libc.so* 2>/dev/null; then
+    echo "⚠️  警告：检测到系统核心库，这可能导致冲突"
+    echo "   建议删除以下系统库文件："
+    ls usr/lib/libc.so* 2>/dev/null || true
+    ls usr/lib/libm.so* 2>/dev/null || true
+    ls usr/lib/libgcc_s.so* 2>/dev/null || true
+    ls usr/lib/libstdc++.so* 2>/dev/null || true
+    echo "   删除命令：rm usr/lib/libc.so* usr/lib/libm.so* usr/lib/libgcc_s.so* usr/lib/libstdc++.so*"
+fi
+
 # 运行程序
 echo "🚀 启动音乐播放器..."
 ./usr/bin/wxmusicplayer "$@"

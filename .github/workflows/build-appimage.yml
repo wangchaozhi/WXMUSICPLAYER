@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-appimage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout code
@@ -50,7 +50,8 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+          # 尝试静态链接以避免库版本问题
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DwxBUILD_SHARED=OFF
           make -j$(nproc)
 
       - name: Copy executable and dependencies
@@ -63,6 +64,12 @@ jobs:
           echo "Copying dependencies..."
           ldd build/bin/wxmusicplayer | grep -v linux-vdso | grep -v ld-linux | awk '{print $3}' | while read lib; do
             if [ -n "$lib" ] && [ -f "$lib" ]; then
+              # Skip system core libraries that should not be copied
+              libname=$(basename "$lib")
+              if [[ "$libname" =~ ^(libc\.|libm\.|libgcc_s\.|libstdc\+\+\.|ld-linux|libpthread\.|libdl\.|libutil\.|libgomp\.|libatomic\.|libquadmath\.|libgfortran\.|libgcc_s_|libstdc\+\+_|libmvec\.) ]]; then
+                echo "Skipping system library: $lib"
+                continue
+              fi
               echo "Copying: $lib"
               cp "$lib" AppDir/usr/lib/ 2>/dev/null || echo "Failed to copy: $lib"
             fi
