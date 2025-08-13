@@ -35,28 +35,36 @@ jobs:
           sudo apt-get install -y -qq libwxgtk3.0-gtk3-dev || sudo apt-get install -y -qq libwxgtk3.0-dev || sudo apt-get install -y -qq wx3.0-headers
           echo "系统依赖安装完成"
 
-      - name: Install AppImage tools
+      - name: Install AppImage build dependencies
         run: |
-          echo "📦 安装AppImage工具..."
-          # 安装FUSE支持
-          sudo apt-get install -y -qq fuse3 libfuse2
-          # 下载AppImage工具（使用稳定版本）
-          wget -c "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
-          chmod +x appimagetool-x86_64.AppImage
-          sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
-          # 检查FUSE
-          ls -la /dev/fuse || echo "FUSE设备不存在"
-          lsmod | grep fuse || echo "FUSE模块未加载"
-          # 检查AppImage工具
-          appimagetool --version || echo "AppImage工具版本检查失败"
-          echo "✅ AppImage工具安装完成"
+          echo "📦 安装AppImage构建依赖..."
+          sudo apt-get install -y \
+            wget \
+            fuse \
+            libfuse2 \
+            desktop-file-utils \
+            zsync
+          echo "✅ AppImage构建依赖安装完成"
+
+      - name: Download AppImage tools
+        run: |
+          echo "📥 下载AppImage工具..."
+          # 下载 appimagetool
+          wget -O appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+
+          # 下载 linuxdeploy (用于依赖收集)
+          wget -O linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy
+          echo "✅ AppImage工具下载完成"
 
       - name: Create AppDir structure
         run: |
-          mkdir -p AppDir/usr/bin
-          mkdir -p AppDir/usr/share/applications
-          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
-          mkdir -p AppDir/usr/lib
+          # 创建 AppDir 结构
+          mkdir -p wxMusicPlayer.AppDir/usr/bin
+          mkdir -p wxMusicPlayer.AppDir/usr/lib
+          mkdir -p wxMusicPlayer.AppDir/usr/share/applications
+          mkdir -p wxMusicPlayer.AppDir/usr/share/icons/hicolor/256x256/apps
 
       - name: Build application
         run: |
@@ -72,8 +80,8 @@ jobs:
       - name: Copy executable and dependencies
         run: |
           # Copy the main executable
-          cp build/bin/wxmusicplayer AppDir/usr/bin/
-          chmod +x AppDir/usr/bin/wxmusicplayer
+          cp build/bin/wxmusicplayer wxMusicPlayer.AppDir/usr/bin/
+          chmod +x wxMusicPlayer.AppDir/usr/bin/wxmusicplayer
 
           # Copy all dependencies using ldd with better error handling
           echo "Copying dependencies..."
@@ -86,97 +94,110 @@ jobs:
                 continue
               fi
               echo "Copying: $lib"
-              cp "$lib" AppDir/usr/lib/ 2>/dev/null || echo "Failed to copy: $lib"
+              cp "$lib" wxMusicPlayer.AppDir/usr/lib/ 2>/dev/null || echo "Failed to copy: $lib"
             fi
           done
 
           # Also copy wxWidgets libraries specifically
           echo "Copying wxWidgets libraries..."
-          find /usr/lib -name "libwx_gtk3u_*.so*" -exec cp {} AppDir/usr/lib/ \; 2>/dev/null || true
-          find /usr/lib/x86_64-linux-gnu -name "libwx_gtk3u_*.so*" -exec cp {} AppDir/usr/lib/ \; 2>/dev/null || true
+          find /usr/lib -name "libwx_gtk3u_*.so*" -exec cp {} wxMusicPlayer.AppDir/usr/lib/ \; 2>/dev/null || true
+          find /usr/lib/x86_64-linux-gnu -name "libwx_gtk3u_*.so*" -exec cp {} wxMusicPlayer.AppDir/usr/lib/ \; 2>/dev/null || true
 
           # List what we copied
-          echo "Libraries in AppDir/usr/lib/:"
-          ls -la AppDir/usr/lib/ || echo "No libraries found"
+          echo "Libraries in wxMusicPlayer.AppDir/usr/lib/:"
+          ls -la wxMusicPlayer.AppDir/usr/lib/ || echo "No libraries found"
 
       - name: Create desktop file
         run: |
-          cat > AppDir/usr/share/applications/wxmusicplayer.desktop << EOF
+          # 创建桌面文件
+          cat > wxMusicPlayer.AppDir/usr/share/applications/wxmusicplayer.desktop << EOF
           [Desktop Entry]
+          Type=Application
           Name=wxMusicPlayer
           GenericName=Music Player
           Comment=Simple music player built with wxWidgets
           Exec=wxmusicplayer
           Icon=wxmusicplayer
-          Terminal=false
-          Type=Application
           Categories=AudioVideo;Audio;Player;
           Keywords=music;player;audio;wxwidgets;
+          StartupNotify=true
+          Terminal=false
           EOF
+
+          # 复制桌面文件到根目录（AppImage标准要求）
+          cp wxMusicPlayer.AppDir/usr/share/applications/wxmusicplayer.desktop wxMusicPlayer.AppDir/
+
+          # 确保桌面文件在正确位置
+          ls -la wxMusicPlayer.AppDir/usr/share/applications/
 
       - name: Create icon
         run: |
           # Create a simple icon using basic shapes
           convert -size 256x256 xc:transparent -fill "#4A90E2" -draw "circle 128,128 128,64" \
                   -fill "#2E5C8A" -draw "circle 128,128 100,50" \
-                  AppDir/usr/share/icons/hicolor/256x256/apps/wxmusicplayer.png
+                  wxMusicPlayer.AppDir/usr/share/icons/hicolor/256x256/apps/wxmusicplayer.png
+
+          # 复制到 AppDir 根目录（AppImage 标准要求）
+          cp wxMusicPlayer.AppDir/usr/share/icons/hicolor/256x256/apps/wxmusicplayer.png wxMusicPlayer.AppDir/
 
       - name: Create AppRun script
         run: |
-          cat > AppDir/AppRun << 'EOF'
+          # 创建 AppRun 启动脚本
+          cat > wxMusicPlayer.AppDir/AppRun << 'EOF'
           #!/bin/bash
+
+          # 获取 AppImage 挂载目录
           HERE="$(dirname "$(readlink -f "${0}")")"
-          export PATH="${HERE}"/usr/bin/:"${PATH}"
-          export LD_LIBRARY_PATH="${HERE}"/usr/lib/:"${LD_LIBRARY_PATH}"
 
-          # Debug: show what libraries are available
-          echo "Available libraries in ${HERE}/usr/lib/:"
-          ls -la "${HERE}"/usr/lib/ 2>/dev/null || echo "No libraries found"
+          # 设置库路径
+          export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
 
-          # Check if executable exists
-          if [ ! -f "${HERE}/usr/bin/wxmusicplayer" ]; then
-            echo "Error: wxmusicplayer executable not found!"
+          # 启动应用
+          exec "${HERE}/usr/bin/wxmusicplayer" "$@"
+          EOF
+
+          chmod +x wxMusicPlayer.AppDir/AppRun
+
+      - name: Create AppImage with appimagetool
+        run: |
+          echo "📦 开始构建AppImage..."
+
+          # 验证 AppDir 结构
+          echo "验证 AppDir 结构:"
+          ls -la wxMusicPlayer.AppDir/
+
+          # 验证必需文件
+          if [ ! -f wxMusicPlayer.AppDir/AppRun ]; then
+            echo "错误: 缺少 AppRun"
             exit 1
           fi
 
-          # Show library dependencies
-          echo "Library dependencies:"
-          ldd "${HERE}/usr/bin/wxmusicplayer" 2>/dev/null || echo "Failed to check dependencies"
-
-          exec "${HERE}"/usr/bin/wxmusicplayer "$@"
-          EOF
-          chmod +x AppDir/AppRun
-
-      - name: Build AppImage
-        run: |
-          echo "📦 开始构建AppImage..."
-          # 复制运行脚本到AppDir
-          cp run_linux.sh AppDir/
-          chmod +x AppDir/run_linux.sh
-
-          # 检查AppDir内容
-          echo "📁 AppDir内容:"
-          find AppDir -type f -executable
+          if [ ! -f wxMusicPlayer.AppDir/wxmusicplayer.desktop ]; then
+            echo "错误: 缺少桌面文件"
+            exit 1
+          fi
 
           # 首先创建tar.gz包作为备用
           echo "📦 创建tar.gz包..."
-          tar -czf wxMusicPlayer-Linux-x86_64.tar.gz -C AppDir .
+          tar -czf wxMusicPlayer-Linux-x86_64.tar.gz -C wxMusicPlayer.AppDir .
           echo "✅ tar.gz包创建完成"
 
-          # 尝试构建AppImage
+          # 使用 appimagetool 创建 AppImage
           echo "🔨 构建AppImage..."
-          # 尝试使用不同的方法构建AppImage
-          if appimagetool AppDir wxMusicPlayer-x86_64.AppImage; then
-            echo "🎉 AppImage构建成功！"
-          else
-            echo "⚠️  AppImage构建失败，尝试使用--no-fuse选项..."
-            if appimagetool --no-fuse AppDir wxMusicPlayer-x86_64.AppImage; then
-              echo "🎉 AppImage构建成功（无FUSE模式）！"
-            else
-              echo "⚠️  AppImage构建完全失败，错误代码: $?"
-              echo "📦 已创建tar.gz包作为替代"
-            fi
+          ARCH=x86_64 ./appimagetool wxMusicPlayer.AppDir wxMusicPlayer-x86_64.AppImage
+
+          # 检查生成的 AppImage 并重命名
+          echo "检查生成的 AppImage 文件:"
+          ls -la *.AppImage || echo "没有找到 AppImage 文件"
+
+          # 统一重命名
+          if [ -f wxMusicPlayer-x86_64.AppImage ]; then
+            mv wxMusicPlayer-x86_64.AppImage wxMusicPlayer-Linux-x86_64.AppImage
+            echo "重命名: wxMusicPlayer-x86_64.AppImage -> wxMusicPlayer-Linux-x86_64.AppImage"
           fi
+
+          echo "最终文件:"
+          ls -la wxMusicPlayer-Linux-x86_64.AppImage || echo "重命名失败"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -184,7 +205,7 @@ jobs:
           name: wxMusicPlayer-Linux
           path: |
             wxMusicPlayer-Linux-x86_64.tar.gz
-            wxMusicPlayer-x86_64.AppImage
+            wxMusicPlayer-Linux-x86_64.AppImage
           if-no-files-found: error
 
       - name: Create release on tag
@@ -192,8 +213,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            wxMusicPlayer-x86_64.AppImage
             wxMusicPlayer-Linux-x86_64.tar.gz
+            wxMusicPlayer-Linux-x86_64.AppImage
           draft: false
           prerelease: false
         env:
