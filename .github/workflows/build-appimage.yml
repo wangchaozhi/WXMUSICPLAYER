@@ -27,8 +27,6 @@ jobs:
           git clone https://github.com/Microsoft/vcpkg.git
           cd vcpkg
           ./bootstrap-vcpkg.sh
-          echo "$PWD/installed/x64-linux-dynamic/share" >> $GITHUB_ENV
-          echo "$PWD/installed/x64-linux-dynamic" >> $GITHUB_ENV
 
       - name: Install dependencies with vcpkg
         run: |
@@ -36,7 +34,6 @@ jobs:
           ./vcpkg install wxwidgets:x64-linux-dynamic
           ./vcpkg install sdl2:x64-linux-dynamic
           ./vcpkg install sdl2-mixer:x64-linux-dynamic
-          ./vcpkg integrate install
 
       - name: Install AppImage tools
         run: |
@@ -55,7 +52,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
           make -j$(nproc)
 
       - name: Copy executable and dependencies
@@ -64,17 +61,13 @@ jobs:
           cp build/bin/wxmusicplayer AppDir/usr/bin/
           chmod +x AppDir/usr/bin/wxmusicplayer
 
-          # Copy wxWidgets libraries from vcpkg
-          ldd build/bin/wxmusicplayer | grep wx | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
+          # Copy all dependencies using ldd
+          ldd build/bin/wxmusicplayer | grep -v linux-vdso | grep -v ld-linux | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
 
-          # Copy SDL2 libraries from vcpkg
-          ldd build/bin/wxmusicplayer | grep SDL | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
-
-          # Copy vcpkg libraries
-          cp vcpkg/installed/x64-linux-dynamic/lib/*.so* AppDir/usr/lib/ 2>/dev/null || true
-
-          # Copy other dependencies
-          ldd build/bin/wxmusicplayer | grep -v wx | grep -v SDL | grep -v linux-vdso | grep -v ld-linux | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
+          # Copy vcpkg libraries if they exist
+          if [ -d "vcpkg/installed/x64-linux-dynamic/lib" ]; then
+            cp vcpkg/installed/x64-linux-dynamic/lib/*.so* AppDir/usr/lib/ 2>/dev/null || true
+          fi
 
       - name: Create desktop file
         run: |

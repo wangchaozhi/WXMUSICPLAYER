@@ -24,6 +24,9 @@ cd vcpkg
 ./vcpkg install wxwidgets:x64-linux-dynamic
 ./vcpkg install sdl2:x64-linux-dynamic
 ./vcpkg install sdl2-mixer:x64-linux-dynamic
+echo "✅ 依赖安装完成"
+echo "📁 vcpkg安装目录: $(pwd)/installed"
+ls -la installed/x64-linux-dynamic/
 cd ..
 
 # 创建构建目录
@@ -37,7 +40,8 @@ echo "⚙️  配置项目..."
 cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+    -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
+    -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
 
 # 编译项目
 echo "🔨 编译项目..."
