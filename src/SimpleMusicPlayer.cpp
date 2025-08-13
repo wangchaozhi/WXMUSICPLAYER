@@ -22,8 +22,24 @@ public:
         // 设置窗口样式
         SetBackgroundColour(wxColour(240, 240, 240));
         
-        // 设置支持中文的字体
-        SetFont(wxFont(9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Microsoft YaHei")));
+        // 设置支持中文的字体（跨平台兼容）
+        wxFont font;
+#ifdef __WXMSW__
+        // Windows系统使用微软雅黑
+        font = wxFont(9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Microsoft YaHei"));
+#else
+        // Linux/macOS系统使用系统默认中文字体
+        font = wxFont(9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT(""));
+        // 尝试设置常见的中文字体
+        if (!font.SetFaceName(wxT("WenQuanYi Micro Hei")) &&
+            !font.SetFaceName(wxT("Noto Sans CJK SC")) &&
+            !font.SetFaceName(wxT("DejaVu Sans")) &&
+            !font.SetFaceName(wxT("Liberation Sans"))) {
+            // 如果都失败，使用系统默认字体
+            font = wxFont(9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+        }
+#endif
+        SetFont(font);
         
         Centre();
     }

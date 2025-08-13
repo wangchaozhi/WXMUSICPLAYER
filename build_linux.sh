@@ -16,8 +16,16 @@ if command -v apt-get &> /dev/null; then
     sudo apt-get install -y libgtk-3-dev
     # 尝试安装wxWidgets开发包，如果3.2不存在则尝试3.0
     sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
-sudo apt-get install -y libasound2-dev libpulse-dev
+    sudo apt-get install -y libasound2-dev libpulse-dev
     sudo apt-get install -y libwxgtk3.0-gtk3-dev || sudo apt-get install -y libwxgtk3.0-dev || sudo apt-get install -y wx3.0-headers
+    
+    # 安装中文字体包（解决字体显示问题）
+    echo "🔤 安装中文字体包..."
+    sudo apt-get install -y fonts-wqy-microhei fonts-noto-cjk fonts-dejavu fonts-liberation
+    
+    # 刷新字体缓存
+    echo "🔄 刷新字体缓存..."
+    sudo fc-cache -fv
 elif command -v yum &> /dev/null; then
     echo "📦 安装 CentOS/RHEL 依赖..."
     sudo yum install -y cmake gcc-c++ pkg-config
