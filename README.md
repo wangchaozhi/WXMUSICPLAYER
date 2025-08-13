@@ -121,6 +121,8 @@ make -j$(nproc)
 
 ## 运行程序
 
+### Windows
+
 编译完成后，运行以下命令启动程序：
 
 ```bash
@@ -132,6 +134,29 @@ make -j$(nproc)
 
 ```bash
 .\build\bin\wxmusicplayer.exe
+```
+
+### Linux
+
+#### 使用AppImage（推荐）
+```bash
+# 下载并运行
+chmod +x wxMusicPlayer-x86_64.AppImage
+./wxMusicPlayer-x86_64.AppImage
+```
+
+#### 使用tar.gz包
+```bash
+# 解压包
+tar -xzf wxMusicPlayer-Linux-x86_64.tar.gz
+cd wxMusicPlayer-Linux-x86_64
+
+# 使用运行脚本（推荐）
+./run_linux.sh
+
+# 或手动设置库路径
+export LD_LIBRARY_PATH="$(pwd)/usr/lib:$LD_LIBRARY_PATH"
+./usr/bin/wxmusicplayer
 ```
 
 ## 项目结构
