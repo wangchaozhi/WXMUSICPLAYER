@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-appimage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
 
     steps:
@@ -35,16 +35,16 @@ jobs:
 
       - name: Install AppImage tools
         run: |
+          echo "📦 安装AppImage工具..."
           # 安装FUSE支持
-          sudo apt-get install -y fuse
+          sudo apt-get install -y -qq fuse3
           # 下载AppImage工具（使用稳定版本）
-          wget -c "https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage"
+          wget -c "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
           chmod +x appimagetool-x86_64.AppImage
           sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
-          # 加载FUSE模块
-          sudo modprobe fuse || true
-          # 检查FUSE是否可用
-          lsmod | grep fuse || echo "FUSE module not loaded, but continuing..."
+          # 检查AppImage工具
+          appimagetool --version || echo "AppImage工具版本检查失败"
+          echo "✅ AppImage工具安装完成"
 
       - name: Create AppDir structure
         run: |
@@ -55,11 +55,14 @@ jobs:
 
       - name: Build application
         run: |
+          echo "🔨 开始构建应用程序..."
           mkdir build
           cd build
           # 使用动态链接，但确保兼容性
           cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+          echo "⚙️  配置完成，开始编译..."
           make -j$(nproc)
+          echo "✅ 应用程序构建完成"
 
       - name: Copy executable and dependencies
         run: |
@@ -141,24 +144,27 @@ jobs:
 
       - name: Build AppImage
         run: |
+          echo "📦 开始构建AppImage..."
           # 复制运行脚本到AppDir
           cp run_linux.sh AppDir/
           chmod +x AppDir/run_linux.sh
-
+          
           # 检查AppDir内容
-          echo "AppDir contents:"
+          echo "📁 AppDir内容:"
           find AppDir -type f -executable
-
+          
+          # 首先创建tar.gz包作为备用
+          echo "📦 创建tar.gz包..."
+          tar -czf wxMusicPlayer-Linux-x86_64.tar.gz -C AppDir .
+          echo "✅ tar.gz包创建完成"
+          
           # 尝试构建AppImage
-          echo "Building AppImage..."
+          echo "🔨 构建AppImage..."
           if appimagetool AppDir wxMusicPlayer-x86_64.AppImage; then
-            echo "AppImage构建成功！"
+            echo "🎉 AppImage构建成功！"
           else
-            echo "AppImage构建失败，错误代码: $?"
-            echo "创建tar.gz包作为替代"
-            # 创建tar.gz包
-            tar -czf wxMusicPlayer-Linux-x86_64.tar.gz -C AppDir .
-            echo "tar.gz包创建完成"
+            echo "⚠️  AppImage构建失败，错误代码: $?"
+            echo "📦 已创建tar.gz包作为替代"
           fi
 
       - name: Upload artifacts
