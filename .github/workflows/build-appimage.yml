@@ -9,7 +9,8 @@ on:
 
 jobs:
   build-appimage:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -17,16 +18,20 @@ jobs:
 
       - name: Setup build environment
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake build-essential pkg-config
-          sudo apt-get install -y libgtk-3-dev
-          sudo apt-get install -y wget file imagemagick
+          echo "开始设置构建环境..."
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cmake build-essential pkg-config
+          sudo apt-get install -y -qq libgtk-3-dev
+          sudo apt-get install -y -qq wget file imagemagick
+          echo "构建环境设置完成"
 
       - name: Install system dependencies
         run: |
+          echo "安装系统依赖..."
           # 尝试安装wxWidgets开发包，如果3.2不存在则尝试3.0
-          sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
-          sudo apt-get install -y libwxgtk3.2-dev || sudo apt-get install -y libwxgtk3.0-dev || sudo apt-get install -y libwxgtk3.1-dev
+          sudo apt-get install -y -qq libsdl2-dev libsdl2-mixer-dev
+          sudo apt-get install -y -qq libwxgtk3.2-dev || sudo apt-get install -y -qq libwxgtk3.0-dev || sudo apt-get install -y -qq libwxgtk3.1-dev
+          echo "系统依赖安装完成"
 
       - name: Install AppImage tools
         run: |

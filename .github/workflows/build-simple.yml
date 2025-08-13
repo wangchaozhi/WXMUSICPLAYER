@@ -1,0 +1,69 @@
+name: Simple Build Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        run: |
+          echo "🚀 开始构建测试..."
+          echo "系统信息: $(uname -a)"
+          echo "可用内存: $(free -h)"
+          echo "磁盘空间: $(df -h)"
+
+      - name: Install dependencies
+        run: |
+          echo "📦 安装依赖..."
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cmake build-essential pkg-config
+          sudo apt-get install -y -qq libgtk-3-dev libsdl2-dev libsdl2-mixer-dev
+          sudo apt-get install -y -qq libwxgtk3.2-dev || sudo apt-get install -y -qq libwxgtk3.0-dev
+          echo "✅ 依赖安装完成"
+
+      - name: Build application
+        run: |
+          echo "🔨 开始编译..."
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
+          echo "✅ 编译完成"
+
+      - name: Test executable
+        run: |
+          echo "🧪 测试可执行文件..."
+          if [ -f "build/bin/wxmusicplayer" ]; then
+            echo "✅ 可执行文件存在"
+            file build/bin/wxmusicplayer
+            ldd build/bin/wxmusicplayer | head -10
+          else
+            echo "❌ 可执行文件不存在"
+            exit 1
+          fi
+
+      - name: Create simple package
+        run: |
+          echo "📦 创建简单包..."
+          mkdir -p package/usr/bin
+          cp build/bin/wxmusicplayer package/usr/bin/
+          chmod +x package/usr/bin/wxmusicplayer
+          tar -czf wxMusicPlayer-simple.tar.gz -C package .
+          echo "✅ 包创建完成"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wxMusicPlayer-simple
+          path: wxMusicPlayer-simple.tar.gz
+          if-no-files-found: error
