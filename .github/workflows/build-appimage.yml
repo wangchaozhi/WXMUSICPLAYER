@@ -39,11 +39,14 @@ jobs:
         run: |
           echo "📦 安装AppImage工具..."
           # 安装FUSE支持
-          sudo apt-get install -y -qq fuse3
+          sudo apt-get install -y -qq fuse3 libfuse2
           # 下载AppImage工具（使用稳定版本）
           wget -c "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
           chmod +x appimagetool-x86_64.AppImage
           sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
+          # 检查FUSE
+          ls -la /dev/fuse || echo "FUSE设备不存在"
+          lsmod | grep fuse || echo "FUSE模块未加载"
           # 检查AppImage工具
           appimagetool --version || echo "AppImage工具版本检查失败"
           echo "✅ AppImage工具安装完成"
@@ -162,11 +165,17 @@ jobs:
 
           # 尝试构建AppImage
           echo "🔨 构建AppImage..."
+          # 尝试使用不同的方法构建AppImage
           if appimagetool AppDir wxMusicPlayer-x86_64.AppImage; then
             echo "🎉 AppImage构建成功！"
           else
-            echo "⚠️  AppImage构建失败，错误代码: $?"
-            echo "📦 已创建tar.gz包作为替代"
+            echo "⚠️  AppImage构建失败，尝试使用--no-fuse选项..."
+            if appimagetool --no-fuse AppDir wxMusicPlayer-x86_64.AppImage; then
+              echo "🎉 AppImage构建成功（无FUSE模式）！"
+            else
+              echo "⚠️  AppImage构建完全失败，错误代码: $?"
+              echo "📦 已创建tar.gz包作为替代"
+            fi
           fi
 
       - name: Upload artifacts
@@ -174,8 +183,8 @@ jobs:
         with:
           name: wxMusicPlayer-Linux
           path: |
-            wxMusicPlayer-x86_64.AppImage
             wxMusicPlayer-Linux-x86_64.tar.gz
+            wxMusicPlayer-x86_64.AppImage
           if-no-files-found: error
 
       - name: Create release on tag
