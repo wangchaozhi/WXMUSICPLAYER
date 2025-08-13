@@ -11,7 +11,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # 查找wxWidgets
-find_package(wxWidgets CONFIG REQUIRED)
+if(WIN32)
+    # Windows使用CONFIG模式
+    find_package(wxWidgets CONFIG REQUIRED)
+else()
+    # Linux/macOS使用传统模式
+    find_package(wxWidgets REQUIRED COMPONENTS core base)
+    include(${wxWidgets_USE_FILE})
+endif()
 
 # 查找音频库
 find_package(PkgConfig REQUIRED)
@@ -35,12 +42,22 @@ target_include_directories(wxmusicplayer PRIVATE
 )
 
 # 链接wxWidgets库和音频库
-target_link_libraries(wxmusicplayer PRIVATE 
-    wx::core 
-    wx::base
-    ${SDL2_LIBRARIES}
-    ${SDL2_MIXER_LIBRARIES}
-)
+if(WIN32)
+    # Windows使用现代目标
+    target_link_libraries(wxmusicplayer PRIVATE 
+        wx::core 
+        wx::base
+        ${SDL2_LIBRARIES}
+        ${SDL2_MIXER_LIBRARIES}
+    )
+else()
+    # Linux/macOS使用传统方式
+    target_link_libraries(wxmusicplayer PRIVATE 
+        ${wxWidgets_LIBRARIES}
+        ${SDL2_LIBRARIES}
+        ${SDL2_MIXER_LIBRARIES}
+    )
+endif()
 
 # 平台特定设置
 if(WIN32)
