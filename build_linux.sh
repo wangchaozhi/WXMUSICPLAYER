@@ -16,7 +16,7 @@ if command -v apt-get &> /dev/null; then
     sudo apt-get install -y libgtk-3-dev
     # 尝试安装wxWidgets开发包，如果3.2不存在则尝试3.0
     sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
-    sudo apt-get install -y libwxgtk3.2-dev || sudo apt-get install -y libwxgtk3.0-dev || sudo apt-get install -y libwxgtk3.1-dev
+    sudo apt-get install -y libwxgtk3.0-gtk3-dev || sudo apt-get install -y libwxgtk3.0-dev || sudo apt-get install -y wx3.0-headers
 elif command -v yum &> /dev/null; then
     echo "📦 安装 CentOS/RHEL 依赖..."
     sudo yum install -y cmake gcc-c++ pkg-config

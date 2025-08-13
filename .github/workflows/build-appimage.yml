@@ -28,9 +28,9 @@ jobs:
       - name: Install system dependencies
         run: |
           echo "安装系统依赖..."
-          # 尝试安装wxWidgets开发包，如果3.2不存在则尝试3.0
           sudo apt-get install -y -qq libsdl2-dev libsdl2-mixer-dev
-          sudo apt-get install -y -qq libwxgtk3.2-dev || sudo apt-get install -y -qq libwxgtk3.0-dev || sudo apt-get install -y -qq libwxgtk3.1-dev
+          # 尝试安装wxWidgets开发包，使用正确的包名
+          sudo apt-get install -y -qq libwxgtk3.0-gtk3-dev || sudo apt-get install -y -qq libwxgtk3.0-dev || sudo apt-get install -y -qq wx3.0-headers
           echo "系统依赖安装完成"
 
       - name: Install AppImage tools
@@ -148,16 +148,16 @@ jobs:
           # 复制运行脚本到AppDir
           cp run_linux.sh AppDir/
           chmod +x AppDir/run_linux.sh
-          
+
           # 检查AppDir内容
           echo "📁 AppDir内容:"
           find AppDir -type f -executable
-          
+
           # 首先创建tar.gz包作为备用
           echo "📦 创建tar.gz包..."
           tar -czf wxMusicPlayer-Linux-x86_64.tar.gz -C AppDir .
           echo "✅ tar.gz包创建完成"
-          
+
           # 尝试构建AppImage
           echo "🔨 构建AppImage..."
           if appimagetool AppDir wxMusicPlayer-x86_64.AppImage; then
