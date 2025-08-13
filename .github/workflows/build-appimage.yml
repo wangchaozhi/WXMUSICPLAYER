@@ -20,26 +20,29 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake build-essential pkg-config
           sudo apt-get install -y libgtk-3-dev
-          sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
           sudo apt-get install -y wget file imagemagick
+
+      - name: Install vcpkg
+        run: |
+          git clone https://github.com/Microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          echo "$PWD/installed/x64-linux-dynamic/share" >> $GITHUB_ENV
+          echo "$PWD/installed/x64-linux-dynamic" >> $GITHUB_ENV
+
+      - name: Install dependencies with vcpkg
+        run: |
+          cd vcpkg
+          ./vcpkg install wxwidgets:x64-linux-dynamic
+          ./vcpkg install sdl2:x64-linux-dynamic
+          ./vcpkg install sdl2-mixer:x64-linux-dynamic
+          ./vcpkg integrate install
 
       - name: Install AppImage tools
         run: |
           wget -c "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
           chmod +x appimagetool-x86_64.AppImage
           sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
-
-      - name: Build wxWidgets
-        run: |
-          wget https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.6/wxWidgets-3.2.6.tar.bz2
-          tar xf wxWidgets-3.2.6.tar.bz2
-          cd wxWidgets-3.2.6
-          mkdir build-gtk
-          cd build-gtk
-          ../configure --prefix=/usr/local --with-gtk=3 --enable-unicode --enable-shared --disable-webview --disable-webkit --disable-webviewwebkit
-          make -j$(nproc)
-          sudo make install
-          sudo ldconfig
 
       - name: Create AppDir structure
         run: |
@@ -52,7 +55,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
           make -j$(nproc)
 
       - name: Copy executable and dependencies
@@ -61,11 +64,14 @@ jobs:
           cp build/bin/wxmusicplayer AppDir/usr/bin/
           chmod +x AppDir/usr/bin/wxmusicplayer
 
-          # Copy wxWidgets libraries
+          # Copy wxWidgets libraries from vcpkg
           ldd build/bin/wxmusicplayer | grep wx | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
 
-          # Copy SDL2 libraries
+          # Copy SDL2 libraries from vcpkg
           ldd build/bin/wxmusicplayer | grep SDL | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
+
+          # Copy vcpkg libraries
+          cp vcpkg/installed/x64-linux-dynamic/lib/*.so* AppDir/usr/lib/ 2>/dev/null || true
 
           # Copy other dependencies
           ldd build/bin/wxmusicplayer | grep -v wx | grep -v SDL | grep -v linux-vdso | grep -v ld-linux | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true

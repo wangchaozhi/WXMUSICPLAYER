@@ -67,7 +67,39 @@ cmake --build . --config Release
 
 ### Linux 构建
 
-#### 安装依赖
+#### 方法 1：使用构建脚本（推荐）
+
+```bash
+# 运行构建脚本
+chmod +x build_linux.sh
+./build_linux.sh
+```
+
+#### 方法 2：手动使用 vcpkg
+
+```bash
+# 安装 vcpkg
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+
+# 安装依赖
+./vcpkg install wxwidgets:x64-linux-dynamic
+./vcpkg install sdl2:x64-linux-dynamic
+./vcpkg install sdl2-mixer:x64-linux-dynamic
+
+# 创建构建目录
+mkdir build
+cd build
+
+# 配置项目（使用 vcpkg 工具链）
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+
+# 编译项目
+make -j$(nproc)
+```
+
+#### 方法 2：使用系统包
 
 wxWidgets在Linux上使用GTK作为底层GUI库，因此需要安装GTK开发包：
 
@@ -84,7 +116,7 @@ sudo yum install -y gtk3-devel
 sudo yum install -y SDL2-devel SDL2_mixer-devel
 ```
 
-#### 编译项目
+然后编译项目：
 
 ```bash
 # 创建构建目录
@@ -133,8 +165,9 @@ wxmusicplayer/
 ├── assets/                 # 资源文件目录
 ├── build/                  # 构建输出目录
 ├── CMakeLists.txt          # CMake配置文件
-├── build_simple.bat        # 构建脚本
-├── run_with_dlls.bat       # 运行脚本
+├── build_simple.bat        # Windows构建脚本
+├── build_linux.sh          # Linux构建脚本
+├── run_with_dlls.bat       # Windows运行脚本
 └── README.md              # 项目说明文档
 ```
 
