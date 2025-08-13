@@ -7,6 +7,23 @@ set -e  # 遇到错误时退出
 
 echo "🎵 开始构建 wxWidgets 音乐播放器..."
 
+# 检查并安装系统依赖
+echo "🔧 检查系统依赖..."
+if command -v apt-get &> /dev/null; then
+    echo "📦 安装 Ubuntu/Debian 依赖..."
+    sudo apt-get update
+    sudo apt-get install -y cmake build-essential pkg-config
+    sudo apt-get install -y libgtk-3-dev
+    sudo apt-get install -y libltdl-dev autoconf automake libtool
+elif command -v yum &> /dev/null; then
+    echo "📦 安装 CentOS/RHEL 依赖..."
+    sudo yum install -y cmake gcc-c++ pkg-config
+    sudo yum install -y gtk3-devel
+    sudo yum install -y libtool autoconf automake
+else
+    echo "⚠️  未知的包管理器，请手动安装依赖"
+fi
+
 # 检查是否已安装 vcpkg
 if [ ! -d "vcpkg" ]; then
     echo "📦 安装 vcpkg..."

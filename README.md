@@ -135,7 +135,7 @@ make -j$(nproc)
 项目配置了 GitHub Actions 自动构建：
 
 - **Linux AppImage**: 自动构建 Linux AppImage 包
-- **多平台支持**: 支持 Ubuntu、Debian 等发行版
+- **系统包依赖**: 使用Ubuntu系统包，避免复杂的vcpkg依赖问题
 - **自动发布**: 推送标签时自动创建 GitHub Release
 
 查看构建状态：[![Build AppImage](https://github.com/wangchaozhi/WXMUSICPLAYER/workflows/Build%20AppImage/badge.svg)](https://github.com/wangchaozhi/WXMUSICPLAYER/actions)
