@@ -73,13 +73,13 @@ cmake --build . --config Release
 # Ubuntu/Debian
 sudo apt-get update
 sudo apt-get install -y cmake build-essential pkg-config
-sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+sudo apt-get install -y libgtk-3-dev
 sudo apt-get install -y libwxgtk3.0-gtk3-dev libwxgtk3.0-gtk3-0v5
 sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
 
 # CentOS/RHEL/Fedora
 sudo yum install -y cmake gcc-c++ pkg-config
-sudo yum install -y gtk3-devel webkitgtk3-devel
+sudo yum install -y gtk3-devel
 sudo yum install -y wxGTK3-devel SDL2-devel SDL2_mixer-devel
 ```
 
