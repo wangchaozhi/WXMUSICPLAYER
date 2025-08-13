@@ -1,0 +1,109 @@
+# Build directories
+build/
+bin/
+lib/
+obj/
+Debug/
+Release/
+x64/
+x86/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Visual Studio files
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.user
+*.aps
+*.pch
+*.vspscc
+*_i.c
+*_p.c
+*.ncb
+*.sdf
+*.opensdf
+*.unsuccessfulbuild
+ipch/
+*.db
+*.opendb
+
+# MinGW files
+*.o
+*.a
+*.exe
+*.dll
+*.so
+*.dylib
+
+# wxWidgets specific
+*.rc
+*.ico
+*.bmp
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*.backup
+
+# Dependencies
+vcpkg_installed/
+packages/
+
+# User specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Backup files
+*~
+*.orig
+*.rej
+
+# Test files
+test/
+tests/
+*_test.cpp
+*_test.h
+
+# Documentation build
+docs/build/
+docs/_build/
+
+# Package files
+*.zip
+*.tar.gz
+*.7z
+*.rar
