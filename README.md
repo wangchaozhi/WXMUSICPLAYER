@@ -69,18 +69,19 @@ cmake --build . --config Release
 
 #### 安装依赖
 
+wxWidgets在Linux上使用GTK作为底层GUI库，因此需要安装GTK开发包：
+
 ```bash
 # Ubuntu/Debian
 sudo apt-get update
 sudo apt-get install -y cmake build-essential pkg-config
 sudo apt-get install -y libgtk-3-dev
-sudo apt-get install -y libwxgtk3.0-gtk3-dev libwxgtk3.0-gtk3-0v5
 sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
 
 # CentOS/RHEL/Fedora
 sudo yum install -y cmake gcc-c++ pkg-config
 sudo yum install -y gtk3-devel
-sudo yum install -y wxGTK3-devel SDL2-devel SDL2_mixer-devel
+sudo yum install -y SDL2-devel SDL2_mixer-devel
 ```
 
 #### 编译项目
