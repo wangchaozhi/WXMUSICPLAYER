@@ -14,37 +14,17 @@ if command -v apt-get &> /dev/null; then
     sudo apt-get update
     sudo apt-get install -y cmake build-essential pkg-config
     sudo apt-get install -y libgtk-3-dev
-    sudo apt-get install -y libltdl-dev autoconf automake libtool
+    # 尝试安装wxWidgets开发包，如果3.2不存在则尝试3.0
+    sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
+    sudo apt-get install -y libwxgtk3.2-dev || sudo apt-get install -y libwxgtk3.0-dev || sudo apt-get install -y libwxgtk3.1-dev
 elif command -v yum &> /dev/null; then
     echo "📦 安装 CentOS/RHEL 依赖..."
     sudo yum install -y cmake gcc-c++ pkg-config
     sudo yum install -y gtk3-devel
-    sudo yum install -y libtool autoconf automake
+    sudo yum install -y wxGTK3-devel SDL2-devel SDL2_mixer-devel
 else
     echo "⚠️  未知的包管理器，请手动安装依赖"
 fi
-
-# 检查是否已安装 vcpkg
-if [ ! -d "vcpkg" ]; then
-    echo "📦 安装 vcpkg..."
-    git clone https://github.com/Microsoft/vcpkg.git
-    cd vcpkg
-    ./bootstrap-vcpkg.sh
-    cd ..
-else
-    echo "✅ vcpkg 已存在"
-fi
-
-# 安装依赖
-echo "📥 安装依赖包..."
-cd vcpkg
-./vcpkg install wxwidgets:x64-linux-dynamic
-./vcpkg install sdl2:x64-linux-dynamic
-./vcpkg install sdl2-mixer:x64-linux-dynamic
-echo "✅ 依赖安装完成"
-echo "📁 vcpkg安装目录: $(pwd)/installed"
-ls -la installed/x64-linux-dynamic/
-cd ..
 
 # 创建构建目录
 echo "🔨 创建构建目录..."
@@ -56,9 +36,7 @@ cd build
 echo "⚙️  配置项目..."
 cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
-    -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
+    -DCMAKE_INSTALL_PREFIX=/usr
 
 # 编译项目
 echo "🔨 编译项目..."

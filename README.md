@@ -75,31 +75,7 @@ chmod +x build_linux.sh
 ./build_linux.sh
 ```
 
-#### 方法 2：手动使用 vcpkg
-
-```bash
-# 安装 vcpkg
-git clone https://github.com/Microsoft/vcpkg.git
-cd vcpkg
-./bootstrap-vcpkg.sh
-
-# 安装依赖
-./vcpkg install wxwidgets:x64-linux-dynamic
-./vcpkg install sdl2:x64-linux-dynamic
-./vcpkg install sdl2-mixer:x64-linux-dynamic
-
-# 创建构建目录
-mkdir build
-cd build
-
-# 配置项目（使用 vcpkg 工具链）
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
-
-# 编译项目
-make -j$(nproc)
-```
-
-#### 方法 2：使用系统包
+#### 方法 2：手动编译
 
 wxWidgets在Linux上使用GTK作为底层GUI库，因此需要安装GTK开发包：
 
@@ -108,7 +84,9 @@ wxWidgets在Linux上使用GTK作为底层GUI库，因此需要安装GTK开发包
 sudo apt-get update
 sudo apt-get install -y cmake build-essential pkg-config
 sudo apt-get install -y libgtk-3-dev
+# 尝试安装wxWidgets开发包，如果3.2不存在则尝试3.0
 sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
+sudo apt-get install -y libwxgtk3.2-dev || sudo apt-get install -y libwxgtk3.0-dev || sudo apt-get install -y libwxgtk3.1-dev
 
 # CentOS/RHEL/Fedora
 sudo yum install -y cmake gcc-c++ pkg-config
@@ -135,7 +113,7 @@ make -j$(nproc)
 项目配置了 GitHub Actions 自动构建：
 
 - **Linux AppImage**: 自动构建 Linux AppImage 包
-- **系统包依赖**: 使用Ubuntu系统包，避免复杂的vcpkg依赖问题
+- **快速构建**: 使用Ubuntu系统包，构建时间短，节省GitHub Actions额度
 - **自动发布**: 推送标签时自动创建 GitHub Release
 
 查看构建状态：[![Build AppImage](https://github.com/wangchaozhi/WXMUSICPLAYER/workflows/Build%20AppImage/badge.svg)](https://github.com/wangchaozhi/WXMUSICPLAYER/actions)
