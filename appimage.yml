@@ -1,0 +1,97 @@
+app: wxMusicPlayer
+runtime: glibc2.28
+runtime-version: 2.28
+sdk: default
+command: wxmusicplayer
+rename: wxmusicplayer
+modules:
+  - name: wxwidgets
+    sources:
+      - type: archive
+        url: https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.6/wxWidgets-3.2.6.tar.bz2
+        sha256: 8de4b11e4e5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5
+    buildsystem: cmake
+    build-options:
+      configure-options:
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        - -DwxBUILD_SHARED=ON
+        - -DwxUSE_GTK=ON
+        - -DwxUSE_UNICODE=ON
+    modules:
+      - name: sdl2
+        sources:
+          - type: archive
+            url: https://www.libsdl.org/release/SDL2-2.28.5.tar.gz
+            sha256: 8de4b11e4e5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5
+        buildsystem: cmake
+        build-options:
+          configure-options:
+            - -DCMAKE_BUILD_TYPE=Release
+            - -DCMAKE_INSTALL_PREFIX=/usr
+      - name: sdl2_mixer
+        sources:
+          - type: archive
+            url: https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.6.3.tar.gz
+            sha256: 8de4b11e4e5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5
+        buildsystem: cmake
+        build-options:
+          configure-options:
+            - -DCMAKE_BUILD_TYPE=Release
+            - -DCMAKE_INSTALL_PREFIX=/usr
+            - -DSDL2MIXER_SAMPLES=OFF
+            - -DSDL2MIXER_FLAC=ON
+            - -DSDL2MIXER_MOD=ON
+            - -DSDL2MIXER_MP3=ON
+            - -DSDL2MIXER_OGG=ON
+            - -DSDL2MIXER_MIDI=ON
+modules:
+  - name: wxmusicplayer
+    buildsystem: cmake
+    build-options:
+      configure-options:
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+    sources:
+      - type: dir
+        path: .
+    modules:
+      - name: wxwidgets
+        buildsystem: cmake
+        build-options:
+          configure-options:
+            - -DCMAKE_BUILD_TYPE=Release
+            - -DCMAKE_INSTALL_PREFIX=/usr
+            - -DwxBUILD_SHARED=ON
+            - -DwxUSE_GTK=ON
+            - -DwxUSE_UNICODE=ON
+        sources:
+          - type: archive
+            url: https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.6/wxWidgets-3.2.6.tar.bz2
+            sha256: 8de4b11e4e5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5
+      - name: sdl2
+        buildsystem: cmake
+        build-options:
+          configure-options:
+            - -DCMAKE_BUILD_TYPE=Release
+            - -DCMAKE_INSTALL_PREFIX=/usr
+        sources:
+          - type: archive
+            url: https://www.libsdl.org/release/SDL2-2.28.5.tar.gz
+            sha256: 8de4b11e4e5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5
+      - name: sdl2_mixer
+        buildsystem: cmake
+        build-options:
+          configure-options:
+            - -DCMAKE_BUILD_TYPE=Release
+            - -DCMAKE_INSTALL_PREFIX=/usr
+            - -DSDL2MIXER_SAMPLES=OFF
+            - -DSDL2MIXER_FLAC=ON
+            - -DSDL2MIXER_MOD=ON
+            - -DSDL2MIXER_MP3=ON
+            - -DSDL2MIXER_OGG=ON
+            - -DSDL2MIXER_MIDI=ON
+        sources:
+          - type: archive
+            url: https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.6.3.tar.gz
+            sha256: 8de4b11e4e5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5

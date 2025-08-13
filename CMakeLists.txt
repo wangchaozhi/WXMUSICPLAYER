@@ -13,6 +13,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # 查找wxWidgets
 find_package(wxWidgets CONFIG REQUIRED)
 
+# 查找音频库
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED sdl2)
+pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
+
 # 源文件列表
 set(SOURCES
     src/SimpleMusicPlayer.cpp
@@ -25,10 +30,17 @@ add_executable(wxmusicplayer ${SOURCES})
 target_include_directories(wxmusicplayer PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${SDL2_INCLUDE_DIRS}
+    ${SDL2_MIXER_INCLUDE_DIRS}
 )
 
-# 链接wxWidgets库
-target_link_libraries(wxmusicplayer PRIVATE wx::core wx::base)
+# 链接wxWidgets库和音频库
+target_link_libraries(wxmusicplayer PRIVATE 
+    wx::core 
+    wx::base
+    ${SDL2_LIBRARIES}
+    ${SDL2_MIXER_LIBRARIES}
+)
 
 # 平台特定设置
 if(WIN32)
@@ -58,8 +70,12 @@ endif()
 # 编译选项
 if(MSVC)
     target_compile_options(wxmusicplayer PRIVATE /W4)
-else()
+elseif(WIN32)
+    # Windows MinGW使用GBK编码
     target_compile_options(wxmusicplayer PRIVATE -Wall -Wextra -Wpedantic -fexec-charset=GBK)
+else()
+    # Linux/macOS使用UTF-8编码
+    target_compile_options(wxmusicplayer PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
 # 安装规则

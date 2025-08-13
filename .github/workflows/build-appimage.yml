@@ -1,0 +1,125 @@
+name: Build AppImage
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-appimage:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup build environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential pkg-config
+        sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+        sudo apt-get install -y libwxgtk3.0-gtk3-dev libwxgtk3.0-gtk3-0v5
+        sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
+        sudo apt-get install -y wget file imagemagick
+        
+    - name: Install AppImage tools
+      run: |
+        wget -c "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+        chmod +x appimagetool-x86_64.AppImage
+        sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
+        
+    - name: Build wxWidgets
+      run: |
+        wget https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.6/wxWidgets-3.2.6.tar.bz2
+        tar xf wxWidgets-3.2.6.tar.bz2
+        cd wxWidgets-3.2.6
+        mkdir build-gtk
+        cd build-gtk
+        ../configure --prefix=/usr/local --with-gtk=3 --enable-unicode --enable-shared
+        make -j$(nproc)
+        sudo make install
+        sudo ldconfig
+        
+    - name: Create AppDir structure
+      run: |
+        mkdir -p AppDir/usr/bin
+        mkdir -p AppDir/usr/share/applications
+        mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+        mkdir -p AppDir/usr/lib
+        
+    - name: Build application
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+        make -j$(nproc)
+        
+    - name: Copy executable and dependencies
+      run: |
+        # Copy the main executable
+        cp build/bin/wxmusicplayer AppDir/usr/bin/
+        chmod +x AppDir/usr/bin/wxmusicplayer
+        
+        # Copy wxWidgets libraries
+        ldd build/bin/wxmusicplayer | grep wx | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
+        
+        # Copy SDL2 libraries
+        ldd build/bin/wxmusicplayer | grep SDL | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
+        
+        # Copy other dependencies
+        ldd build/bin/wxmusicplayer | grep -v wx | grep -v SDL | grep -v linux-vdso | grep -v ld-linux | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
+        
+    - name: Create desktop file
+      run: |
+        cat > AppDir/usr/share/applications/wxmusicplayer.desktop << EOF
+        [Desktop Entry]
+        Name=wxMusicPlayer
+        GenericName=Music Player
+        Comment=Simple music player built with wxWidgets
+        Exec=wxmusicplayer
+        Icon=wxmusicplayer
+        Terminal=false
+        Type=Application
+        Categories=AudioVideo;Audio;Player;
+        Keywords=music;player;audio;wxwidgets;
+        EOF
+        
+    - name: Create icon
+      run: |
+        # Create a simple icon
+        convert -size 256x256 xc:transparent -fill "#4A90E2" -draw "circle 128,128 128,64" \
+                -fill white -pointsize 60 -gravity center -annotate +0+0 "🎵" \
+                AppDir/usr/share/icons/hicolor/256x256/apps/wxmusicplayer.png
+                
+    - name: Create AppRun script
+      run: |
+        cat > AppDir/AppRun << 'EOF'
+        #!/bin/bash
+        HERE="$(dirname "$(readlink -f "${0}")")"
+        export PATH="${HERE}"/usr/bin/:"${PATH}"
+        export LD_LIBRARY_PATH="${HERE}"/usr/lib/:"${LD_LIBRARY_PATH}"
+        exec "${HERE}"/usr/bin/wxmusicplayer "$@"
+        EOF
+        chmod +x AppDir/AppRun
+        
+    - name: Build AppImage
+      run: |
+        appimagetool AppDir wxMusicPlayer-x86_64.AppImage
+        
+    - name: Upload AppImage artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: wxMusicPlayer-Linux-AppImage
+        path: wxMusicPlayer-x86_64.AppImage
+        
+    - name: Create release on tag
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: wxMusicPlayer-x86_64.AppImage
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

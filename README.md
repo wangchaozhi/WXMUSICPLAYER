@@ -1,10 +1,10 @@
 # wxWidgets 音乐播放器
 
-一个基于wxWidgets框架开发的简单音乐播放器，支持播放WAV和MP3格式的音频文件。
+一个基于 wxWidgets 框架开发的简单音乐播放器，支持播放 WAV 和 MP3 格式的音频文件。
 
 ## 功能特性
 
-- 🎵 支持播放WAV和MP3格式音频文件
+- 🎵 支持播放 WAV 和 MP3 格式音频文件
 - 📋 播放列表管理（添加、删除、选择）
 - ⏯️ 播放控制（播放、暂停、停止）
 - 🎨 简洁直观的用户界面
@@ -19,7 +19,7 @@
 
 ## 安装依赖
 
-### 使用vcpkg安装wxWidgets（推荐）
+### 使用 vcpkg 安装 wxWidgets（推荐）
 
 ```bash
 # 安装vcpkg
@@ -31,15 +31,17 @@ cd vcpkg
 .\vcpkg install wxwidgets:x64-mingw-dynamic
 ```
 
-### 手动安装wxWidgets
+### 手动安装 wxWidgets
 
-1. 访问 [wxWidgets官网](https://www.wxwidgets.org/downloads/)
-2. 下载并安装wxWidgets
-3. 编译wxWidgets库
+1. 访问 [wxWidgets 官网](https://www.wxwidgets.org/downloads/)
+2. 下载并安装 wxWidgets
+3. 编译 wxWidgets 库
 
 ## 编译项目
 
-### 方法1：使用构建脚本（推荐）
+### Windows 构建
+
+#### 方法 1：使用构建脚本（推荐）
 
 ```bash
 # 设置环境变量
@@ -49,7 +51,7 @@ $env:CMAKE_PREFIX_PATH = "E:\dev\vcpkg\installed\x64-mingw-dynamic"
 .\build_simple.bat
 ```
 
-### 方法2：手动编译
+#### 方法 2：手动编译
 
 ```bash
 # 创建构建目录
@@ -62,6 +64,48 @@ cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 # 编译项目
 cmake --build . --config Release
 ```
+
+### Linux 构建
+
+#### 安装依赖
+
+```bash
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install -y cmake build-essential pkg-config
+sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+sudo apt-get install -y libwxgtk3.0-gtk3-dev libwxgtk3.0-gtk3-0v5
+sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
+
+# CentOS/RHEL/Fedora
+sudo yum install -y cmake gcc-c++ pkg-config
+sudo yum install -y gtk3-devel webkitgtk3-devel
+sudo yum install -y wxGTK3-devel SDL2-devel SDL2_mixer-devel
+```
+
+#### 编译项目
+
+```bash
+# 创建构建目录
+mkdir build
+cd build
+
+# 配置项目
+cmake .. -DCMAKE_BUILD_TYPE=Release
+
+# 编译项目
+make -j$(nproc)
+```
+
+### 自动构建（GitHub Actions）
+
+项目配置了 GitHub Actions 自动构建：
+
+- **Linux AppImage**: 自动构建 Linux AppImage 包
+- **多平台支持**: 支持 Ubuntu、Debian 等发行版
+- **自动发布**: 推送标签时自动创建 GitHub Release
+
+查看构建状态：[![Build AppImage](https://github.com/wangchaozhi/WXMUSICPLAYER/workflows/Build%20AppImage/badge.svg)](https://github.com/wangchaozhi/WXMUSICPLAYER/actions)
 
 ## 运行程序
 
@@ -97,13 +141,13 @@ wxmusicplayer/
 
 本项目使用 `-fexec-charset=GBK` 编译器选项解决中文显示问题：
 
-- 源代码保持UTF-8编码
-- 编译时自动转换为GBK编码
-- 无需使用wxT()宏或复杂的本地化设置
+- 源代码保持 UTF-8 编码
+- 编译时自动转换为 GBK 编码
+- 无需使用 wxT()宏或复杂的本地化设置
 
 ## 技术栈
 
-- **GUI框架**: wxWidgets 3.2.6
+- **GUI 框架**: wxWidgets 3.2.6
 - **构建系统**: CMake
 - **编译器**: MinGW-w64
 - **语言**: C++17
@@ -115,7 +159,7 @@ wxmusicplayer/
 
 ## 贡献
 
-欢迎提交Issue和Pull Request！
+欢迎提交 Issue 和 Pull Request！
 
 ## 作者
 
@@ -124,6 +168,7 @@ wxmusicplayer/
 ## 更新日志
 
 ### v1.0.0
+
 - 初始版本发布
 - 基本播放功能
 - 播放列表管理
