@@ -88,7 +88,7 @@ EOF
 
 # 创建图标
 convert -size 256x256 xc:transparent -fill "#4A90E2" -draw "circle 128,128 128,64" \
-        -fill white -pointsize 60 -gravity center -annotate +0+0 "🎵" \
+        -fill "#2E5C8A" -draw "circle 128,128 100,50" \
         package/usr/share/icons/hicolor/256x256/apps/wxmusicplayer.png
 
 # 创建运行脚本
