@@ -32,12 +32,14 @@ jobs:
         run: |
           # 安装FUSE支持
           sudo apt-get install -y fuse
-          # 下载AppImage工具
-          wget -c "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+          # 下载AppImage工具（使用稳定版本）
+          wget -c "https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage"
           chmod +x appimagetool-x86_64.AppImage
           sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
           # 加载FUSE模块
           sudo modprobe fuse || true
+          # 检查FUSE是否可用
+          lsmod | grep fuse || echo "FUSE module not loaded, but continuing..."
 
       - name: Create AppDir structure
         run: |
@@ -50,8 +52,8 @@ jobs:
         run: |
           mkdir build
           cd build
-          # 尝试静态链接以避免库版本问题
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DwxBUILD_SHARED=OFF
+          # 使用动态链接，但确保兼容性
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
           make -j$(nproc)
 
       - name: Copy executable and dependencies
@@ -138,12 +140,21 @@ jobs:
           cp run_linux.sh AppDir/
           chmod +x AppDir/run_linux.sh
 
+          # 检查AppDir内容
+          echo "AppDir contents:"
+          find AppDir -type f -executable
+
           # 尝试构建AppImage
-          appimagetool AppDir wxMusicPlayer-x86_64.AppImage || {
-            echo "AppImage构建失败，创建tar.gz包作为替代"
+          echo "Building AppImage..."
+          if appimagetool AppDir wxMusicPlayer-x86_64.AppImage; then
+            echo "AppImage构建成功！"
+          else
+            echo "AppImage构建失败，错误代码: $?"
+            echo "创建tar.gz包作为替代"
             # 创建tar.gz包
             tar -czf wxMusicPlayer-Linux-x86_64.tar.gz -C AppDir .
-          }
+            echo "tar.gz包创建完成"
+          fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
