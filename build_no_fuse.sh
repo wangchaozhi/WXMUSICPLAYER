@@ -14,6 +14,7 @@ if command -v apt-get &> /dev/null; then
     sudo apt-get install -y -qq cmake build-essential pkg-config
     sudo apt-get install -y -qq libgtk-3-dev
     sudo apt-get install -y -qq libsdl2-dev libsdl2-mixer-dev
+sudo apt-get install -y -qq libasound2-dev libpulse-dev
     sudo apt-get install -y -qq libwxgtk3.0-gtk3-dev || sudo apt-get install -y -qq libwxgtk3.0-dev || sudo apt-get install -y -qq wx3.0-headers
 elif command -v yum &> /dev/null; then
     echo "📦 安装 CentOS/RHEL 依赖..."

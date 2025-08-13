@@ -29,6 +29,8 @@ jobs:
         run: |
           echo "安装系统依赖..."
           sudo apt-get install -y -qq libsdl2-dev libsdl2-mixer-dev
+          # 安装音频库
+          sudo apt-get install -y -qq libasound2-dev libpulse-dev
           # 尝试安装wxWidgets开发包，使用正确的包名
           sudo apt-get install -y -qq libwxgtk3.0-gtk3-dev || sudo apt-get install -y -qq libwxgtk3.0-dev || sudo apt-get install -y -qq wx3.0-headers
           echo "系统依赖安装完成"

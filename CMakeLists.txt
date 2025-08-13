@@ -15,8 +15,8 @@ if(WIN32)
     # Windows使用CONFIG模式
     find_package(wxWidgets CONFIG REQUIRED)
 else()
-    # Linux/macOS使用传统模式
-    find_package(wxWidgets REQUIRED COMPONENTS core base)
+    # Linux/macOS使用传统模式，包含音频支持
+    find_package(wxWidgets REQUIRED COMPONENTS core base adv)
     include(${wxWidgets_USE_FILE})
 endif()
 
@@ -24,6 +24,12 @@ endif()
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
+
+# 查找系统音频库（Linux）
+if(UNIX AND NOT APPLE)
+    find_library(ALSA_LIBRARY NAMES asound)
+    find_library(PULSEAUDIO_LIBRARY NAMES pulse)
+endif()
 
 # 源文件列表
 set(SOURCES
@@ -56,6 +62,8 @@ else()
         ${wxWidgets_LIBRARIES}
         ${SDL2_LIBRARIES}
         ${SDL2_MIXER_LIBRARIES}
+        ${ALSA_LIBRARY}
+        ${PULSEAUDIO_LIBRARY}
     )
 endif()
 
