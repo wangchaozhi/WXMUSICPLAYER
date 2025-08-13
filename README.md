@@ -113,6 +113,7 @@ make -j$(nproc)
 项目配置了 GitHub Actions 自动构建：
 
 - **Linux AppImage**: 自动构建 Linux AppImage 包
+- **备用tar.gz包**: 如果AppImage构建失败，自动创建tar.gz包
 - **快速构建**: 使用Ubuntu系统包，构建时间短，节省GitHub Actions额度
 - **自动发布**: 推送标签时自动创建 GitHub Release
 

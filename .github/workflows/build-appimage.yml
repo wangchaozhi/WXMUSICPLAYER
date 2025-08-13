@@ -30,9 +30,14 @@ jobs:
 
       - name: Install AppImage tools
         run: |
+          # 安装FUSE支持
+          sudo apt-get install -y fuse
+          # 下载AppImage工具
           wget -c "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
           chmod +x appimagetool-x86_64.AppImage
           sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
+          # 加载FUSE模块
+          sudo modprobe fuse || true
 
       - name: Create AppDir structure
         run: |
@@ -92,19 +97,29 @@ jobs:
 
       - name: Build AppImage
         run: |
-          appimagetool AppDir wxMusicPlayer-x86_64.AppImage
+          # 尝试构建AppImage
+          appimagetool AppDir wxMusicPlayer-x86_64.AppImage || {
+            echo "AppImage构建失败，创建tar.gz包作为替代"
+            # 创建tar.gz包
+            tar -czf wxMusicPlayer-Linux-x86_64.tar.gz -C AppDir .
+          }
 
-      - name: Upload AppImage artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wxMusicPlayer-Linux-AppImage
-          path: wxMusicPlayer-x86_64.AppImage
+          name: wxMusicPlayer-Linux
+          path: |
+            wxMusicPlayer-x86_64.AppImage
+            wxMusicPlayer-Linux-x86_64.tar.gz
+          if-no-files-found: error
 
       - name: Create release on tag
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: wxMusicPlayer-x86_64.AppImage
+          files: |
+            wxMusicPlayer-x86_64.AppImage
+            wxMusicPlayer-Linux-x86_64.tar.gz
           draft: false
           prerelease: false
         env:
